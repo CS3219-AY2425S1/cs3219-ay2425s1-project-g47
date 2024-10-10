@@ -1,0 +1,48 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - user-service
+      - question-service
+    networks:
+      - app-network
+
+  user-service:
+    build:
+      context: ./backend/user-service
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - app-network
+
+  question-service:
+    build:
+      context: ./backend/question-service
+    ports:
+      - "5050:5050"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - app-network
+  
+  nginx:
+    build:
+      context: ./backend/api-gateway  
+    ports:
+      - "80:80"  
+    depends_on:
+      - user-service
+      - question-service
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
