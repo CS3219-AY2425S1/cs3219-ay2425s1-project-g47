@@ -7,6 +7,7 @@ import (
 	"matching-service/internal/socket"
 	"matching-service/internal/middleware"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,7 +27,17 @@ func main() {
 
 	// Set up Gin router
 	router := gin.Default()
+	// Configure CORS middleware
+	config := cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000", "http://localhost"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}
 
+	// Apply the CORS middleware to the router
+	router.Use(cors.New(config))
 	// WebSocket route to handle connections
 	router.GET("/ws", socket.HandleConnections)
 

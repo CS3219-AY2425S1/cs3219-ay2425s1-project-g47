@@ -33,7 +33,7 @@ func AddUserHandler(c *gin.Context) {
 
 	go startMatchingProcess(matchingInfo)
 
-	c.JSON(200, gin.H{"message": "User added", "user_id": matchingInfo.UserID})
+	c.JSON(200, gin.H{"message": "User added", "user_id": matchingInfo.UserID, "socket_id": matchingInfo.SocketID})
 }
 
 // CancelMatchHandler handles the request to cancel a user's match search
