@@ -1,0 +1,83 @@
+version: '3.8'
+services:
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - user-service
+      - question-service
+      - matching-service
+    networks:
+      - app-network
+
+  user-service:
+    build:
+      context: ./backend/user-service
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - app-network
+
+  question-service:
+    build:
+      context: ./backend/question-service
+    ports:
+      - "5050:5050"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - app-network
+  
+  matching-service:
+    build:
+      context: ./backend/matching-service
+    ports:
+      - "3002:3002" 
+    environment:
+      - NODE_ENV=production
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_URL=amqp://ihate:cs3219@rabbitmq:5672/
+    depends_on:
+      - rabbitmq
+    networks:
+      - app-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"   # RabbitMQ port for messaging
+      - "15672:15672" # RabbitMQ management UI
+    environment:
+      - RABBITMQ_DEFAULT_USER=ihate
+      - RABBITMQ_DEFAULT_PASS=cs3219
+      - RABBITMQ_ERLANG_COOKIE=1234
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+  
+  nginx:
+    build:
+      context: ./backend/api-gateway  
+    ports:
+      - "80:80"  
+    depends_on:
+      - user-service
+      - question-service
+      - matching-service
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
