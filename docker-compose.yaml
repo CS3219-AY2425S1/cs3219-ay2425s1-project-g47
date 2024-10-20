@@ -45,7 +45,8 @@ services:
       - RABBITMQ_PORT=5672
       - RABBITMQ_URL=amqp://ihate:cs3219@rabbitmq:5672/
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     networks:
       - app-network
 
