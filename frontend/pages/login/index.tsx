@@ -29,6 +29,7 @@ const LoginPage = () => {
           };
 
           setUser(user);
+          console.log("Pushing to main page");
           router.push("/match");
         },
         onError: (err) => {
