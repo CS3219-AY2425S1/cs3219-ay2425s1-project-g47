@@ -35,6 +35,9 @@ export async function handleLogin(req, res) {
       res.cookie("accessToken", accessToken, {
         httpOnly: true,  // Ensure it's not accessible via JavaScript (XSS protection)
         maxAge: 12 * 60 * 60 * 1000,  // 12 hour
+        sameSite: "None",
+        secure: true,
+        path: "/",
       });
 
       // Send access token and user data in the response body
