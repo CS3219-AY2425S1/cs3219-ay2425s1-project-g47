@@ -23,7 +23,7 @@ func ConnectToRabbitMQ() error {
 		return fmt.Errorf("error loading .env file: %v", err)
 	}
 
-	rabbitMQURL := os.Getenv("RABBITMQ_URL")
+	rabbitMQURL := getRabbitMQURL()
 	if rabbitMQURL == "" {
 		return fmt.Errorf("RABBITMQ_URL not set in environment")
 	}
@@ -42,6 +42,17 @@ func ConnectToRabbitMQ() error {
 
 	log.Println("Connected to RabbitMQ")
 	return nil
+}
+
+// getRabbitMQURL dynamically gets the URL for local or production RabbitMQ
+func getRabbitMQURL() string {     // Check environment
+    environment := os.Getenv("NODE_ENV")
+    if environment == "production" {
+        return os.Getenv("RABBITMQ_URL")
+	}
+
+    // Fallback to local RabbitMQ (Docker)
+    return os.Getenv("RABBITMQ_DEV_URL")
 }
 
 // PublishMatch publishes a match result to RabbitMQ

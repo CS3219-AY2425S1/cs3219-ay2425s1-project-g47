@@ -38,6 +38,7 @@ export async function handleLogin(req, res) {
         sameSite: "None",
         secure: true,
         path: "/",
+        // domain: "frontend-669353764239.asia-southeast1.run.app",
       });
 
       // Send access token and user data in the response body

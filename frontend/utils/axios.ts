@@ -1,8 +1,8 @@
-import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
+import axios from "axios";
 
 // Create an Axios instance
 const instance = axios.create({
-  baseURL: "http://localhost/api",
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",

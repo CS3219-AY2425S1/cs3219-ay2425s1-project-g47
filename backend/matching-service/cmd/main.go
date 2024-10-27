@@ -3,20 +3,26 @@ package main
 import (
 	"log"
 	"matching-service/internal/controllers"
+	"matching-service/internal/middleware"
 	"matching-service/internal/services"
 	"matching-service/internal/socket"
-	"matching-service/internal/middleware"
-
-	"github.com/gin-contrib/cors"
+	
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Load environment variables
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("error loading .env file: %v", err)
+	}
+
 	// Connect to MongoDB
 	services.ConnectToMongo()
 
 	// Connect to RabbitMQ
-	err := services.ConnectToRabbitMQ()
+	err = services.ConnectToRabbitMQ()
 	if err != nil {
 		log.Fatalf("Failed to connect to RabbitMQ: %v", err)
 	}
@@ -27,17 +33,7 @@ func main() {
 
 	// Set up Gin router
 	router := gin.Default()
-	// Configure CORS middleware
-	config := cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "http://localhost"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-	}
 
-	// Apply the CORS middleware to the router
-	router.Use(cors.New(config))
 	// WebSocket route to handle connections
 	router.GET("/ws", socket.HandleConnections)
 
@@ -51,7 +47,6 @@ func main() {
 		// Route for cancelling a user (requires authentication)
 		authRoutes.POST("/cancel/:userID", controllers.CancelMatchHandler)
 	}
-
 
 	// Start the server
 	log.Println("Server started on :3002")

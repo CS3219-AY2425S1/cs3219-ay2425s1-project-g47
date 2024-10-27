@@ -7,7 +7,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://nginx
+      - NEXT_PUBLIC_API_BASE_URL=http://nginx
     depends_on:
       - user-service
       - question-service
@@ -72,7 +72,11 @@ services:
     build:
       context: ./backend/api-gateway  
     ports:
-      - "80:80"  
+      - "8080:8080"
+    environment:
+      - QUESTION_SERVICE_URL=http://question-service:5050
+      - USER_SERVICE_URL=http://user-service:3001
+      - MATCHING_SERVICE_URL=http://matching-service:3002
     depends_on:
       - user-service
       - question-service

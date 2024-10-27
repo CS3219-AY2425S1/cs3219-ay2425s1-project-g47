@@ -11,14 +11,15 @@ const publicRoutes = [
   "/reset-password",
 ];
 
-const baseURL = process.env.NEXT_PUBLIC_API_URL;
+const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const validateToken = async (accessToken: string | undefined): Promise<any> => {
   try {
     const response = await fetch(
-      `${baseURL}/api/user-service/auth/verify-token`,
+      `${baseURL}/user-service/auth/verify-token`,
       {
         method: "GET",
+        credentials: "include",
         headers: {
           Cookie: `accessToken=${accessToken}`,
           "Content-Type": "application/json",
