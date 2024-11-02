@@ -179,15 +179,15 @@ export const useLogout = () => {
   });
 };
 
-const verifyToken = async () => {
-  const response = await axios.get(`/user-service/auth/verify-token`);
+// const verifyToken = async () => {
+//   const response = await axios.get(`/user-service/auth/verify-token`);
 
-  return response.data.data;
-};
+//   return response.data.data;
+// };
 
-export const useVerifyToken = () => {
-  return useQuery<User, AxiosError>({
-    queryKey: ["verifyToken"],
-    queryFn: () => verifyToken(),
-  });
-};
+// export const useVerifyToken = () => {
+//   return useQuery<User, AxiosError>({
+//     queryKey: ["verifyToken"],
+//     queryFn: () => verifyToken(),
+//   });
+// };
