@@ -21,8 +21,7 @@ const validateToken = async (accessToken: string | undefined): Promise<any> => {
         method: "GET",
         credentials: "include",
         headers: {
-          Cookie: `accessToken=${accessToken}`,
-          "Content-Type": "application/json",
+          Cookie: `accessToken=${accessToken}`, // Pass the accessToken as a cookie
         },
       },
     );
