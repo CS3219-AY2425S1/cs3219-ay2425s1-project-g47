@@ -23,12 +23,15 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_COLLABORATION_SERVICE_SOCKET_IO_URL;
 
 const LANGUAGE_MAP: Record<string, number> = {
-  javascript: 63,
-  python: 71,
-  java: 62,
   cpp: 54,
   csharp: 51,
-  // Add more mappings as needed
+  python: 71,
+  javascript: 63,
+  java: 62,
+  ruby: 72,
+  go: 95,
+  php: 98,
+  typescript: 101,
 };
 
 const CODE_EDITOR_LANGUAGE_MAP: { [language: string]: string } = {
