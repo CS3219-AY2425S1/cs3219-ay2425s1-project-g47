@@ -104,28 +104,26 @@ export default function CodeEditor({
   };
 
   useEffect(() => {
-    if (typeof window !== "undefined" && monaco) {
+    if (typeof window !== "undefined" && monaco && codeEditorRef.current) {
       const ydoc = new Y.Doc();
       const provider = new WebsocketProvider(
-        process.env.NEXT_PUBLIC_COLLAB_SERVICE_Y_SERVER_PATH ||
-          "ws://localhost:2501",
+        process.env.NEXT_PUBLIC_COLLAB_SERVICE_Y_SERVER_PATH || "ws://localhost:2501",
         roomId,
         ydoc,
       );
       const yAwareness = provider.awareness;
       const yDocTextMonaco = ydoc.getText("monaco");
-
-      const editor = monaco.editor.getEditors()[0];
+  
+      const editor = codeEditorRef.current;
       const userColor = randomColor();
-
+  
       yAwareness.setLocalStateField("user", {
         name: userName,
         userId: userId,
         email: userEmail,
         color: userColor,
       });
-      console.log(monaco.languages.getLanguages());
-
+  
       yAwareness.on(
         "change",
         (changes: {
@@ -134,7 +132,7 @@ export default function CodeEditor({
           removed: number[];
         }) => {
           const awarenessStates = yAwareness.getStates();
-
+  
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           changes.added.forEach((clientId) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -143,42 +141,64 @@ export default function CodeEditor({
             const color = state?.color;
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
             const username = state?.name;
+  
             const cursorStyleElem = document.head.appendChild(
-              document.createElement("style"),
+              document.createElement("style")
             );
-
             cursorStyleElem.innerHTML = `.yRemoteSelectionHead-${clientId} { border-left: ${color} solid 2px;}`;
+            
             const highlightStyleElem = document.head.appendChild(
-              document.createElement("style"),
+              document.createElement("style")
             );
-
             highlightStyleElem.innerHTML = `.yRemoteSelection-${clientId} { background-color: ${color}9A;}`;
+  
             const styleElem = document.head.appendChild(
-              document.createElement("style"),
+              document.createElement("style")
             );
-
             styleElem.innerHTML = `.yRemoteSelectionHead-${clientId}::after { transform: translateY(5); margin-left: 5px; border-radius: 5px; opacity: 80%; background-color: ${color}; color: black; content: '${username}'}`;
           });
         },
       );
-
-      // create the monaco binding to the yjs doc
-      new MonacoBinding(
-        yDocTextMonaco,
-        editor?.getModel() || monaco.editor.createModel("", CODE_EDITOR_LANGUAGE_MAP[language]),
-        // @ts-expect-error TODO: fix this
-        new Set([editor]),
-        yAwareness,
-      );
-    }
-
-    return () => {
-      if (!monaco) {
-        return;
+  
+      // Ensure editor.getModel() is non-null before using it
+      const model = editor.getModel();
+      if (editor && model) {
+        // Set initial content from Yjs document to ensure immediate sync for rejoining users
+        model.setValue(yDocTextMonaco.toString());
+  
+        // Create the MonacoBinding
+        new MonacoBinding(
+          yDocTextMonaco,
+          model,
+          new Set([editor]),
+          yAwareness
+        );
       }
-      monaco.editor.getModels().forEach((editor) => editor.dispose());
-    };
-  }, [monaco]);
+  
+      // Event listener to clear user state when they disconnect
+      provider.on("status", (event: { status: string }) => {
+        if (event.status === "disconnected") {
+          yAwareness.setLocalState(null); // Clear local awareness state when disconnected
+        }
+      });
+  
+      // Emit an initial update to ensure rejoining users get the latest code
+      provider.on("sync", (isSynced: boolean) => {
+        if (isSynced) {
+          yDocTextMonaco.insert(0, yDocTextMonaco.toString()); // Reinsert content to trigger sync
+        }
+      });
+  
+      return () => {
+        if (model) {
+          model.dispose();
+        }
+        provider.disconnect();  // Disconnect the provider
+        provider.destroy();     // Cleanup to avoid residual states
+      };
+    }
+  }, [monaco, codeEditorRef.current]);
+  
 
   return (
     <div className="flex flex-col space-y-3">
