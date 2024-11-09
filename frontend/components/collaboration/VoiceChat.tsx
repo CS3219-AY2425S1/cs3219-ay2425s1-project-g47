@@ -3,6 +3,9 @@ import Peer, { MediaConnection } from "peerjs";
 import { useParams } from "next/navigation";
 import { Card, CardBody, CardFooter } from "@nextui-org/card";
 import Cookies from "js-cookie";
+import { Button } from "@nextui-org/react";
+
+import { MicrophoneIcon } from "../icons";
 
 interface VoiceChatProps {
   className?: string;
@@ -19,11 +22,13 @@ export default function VoiceChat({
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [peerID, setPeerID] = useState("");
   const [connectionPeerID, setConnectionPeerID] = useState("");
+  const [isMuted, setIsMuted] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     const storedPeerID = Cookies.get("peerID");
+
     if (roomID) {
       console.log("Fetching peer IDs for room:", roomID);
 
@@ -131,6 +136,7 @@ export default function VoiceChat({
       audioRef.current.srcObject = remoteStream;
     }
   }, [remoteStream]);
+  const handleMute = () => setIsMuted((prev) => !prev);
 
   return (
     <Card className={cardClassName}>
@@ -144,9 +150,21 @@ export default function VoiceChat({
         </p>
       </CardBody>
       <CardFooter>
-        {/* Disable the specific ESLint rule for the audio element */}
-        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-        <audio ref={audioRef} autoPlay controls />
+        <div>
+          {/* Disable the specific ESLint rule for the audio element */}
+          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+          <audio ref={audioRef} autoPlay muted={isMuted} />
+          <Button
+            className="flex items-center justify-center"
+            color={isMuted ? "danger" : "primary"}
+            onPress={handleMute}
+          >
+            <MicrophoneIcon />
+            {isMuted && (
+              <div className="absolute top-1/2 left-1 w-5/6 h-0.5 bg-white transform rotate-45" />
+            )}
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   );
