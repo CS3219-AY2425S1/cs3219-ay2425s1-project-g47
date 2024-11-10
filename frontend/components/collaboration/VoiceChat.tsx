@@ -4,8 +4,9 @@ import { useParams } from "next/navigation";
 import { Card, CardBody, CardFooter } from "@nextui-org/card";
 import Cookies from "js-cookie";
 import { Button } from "@nextui-org/react";
-
 import { MicrophoneIcon } from "../icons";
+import axios from "@/utils/axios";
+
 
 interface VoiceChatProps {
   className?: string;
@@ -28,17 +29,20 @@ export default function VoiceChat({
 
   useEffect(() => {
     const storedPeerID = Cookies.get("peerID");
-
+  
     if (roomID) {
       console.log("Fetching peer IDs for room:", roomID);
-
-      fetch(`http://localhost:8085/join/${roomID}?peerID=${storedPeerID || ""}`)
-        .then((response) => response.json())
-        .then((data) => {
+  
+      axios
+        .get(`/voice-service/join/${roomID}`, {
+          params: { peerID: storedPeerID || "" },
+        })
+        .then((response) => {
+          const data = response.data;
           setPeerID(data.peerID);
           setConnectionPeerID(data.connectionPeerID || "");
           console.log("Received peer IDs:", data);
-
+  
           // Update the cookie with the new peerID if it's not already stored
           if (data.peerID !== storedPeerID) {
             Cookies.set("peerID", data.peerID, { expires: 1 });

@@ -97,34 +97,3 @@ func generatePeerID() string {
 	}
 	return "peer-" + string(result)
 }
-
-func LeaveRoom(c *gin.Context) {
-	roomID := c.Param("roomID")
-	peerID := c.Query("peerID") // Get the peerID to be removed
-	log.Println("RoomID:", roomID, "PeerID to be removed:", peerID)
-
-	roomsMutex.Lock()
-	defer roomsMutex.Unlock()
-
-	// Find the room and remove the peerID
-	room, exists := rooms[roomID]
-	if !exists {
-		log.Println("Room does not exist:", roomID)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Room does not exist"})
-		return
-	}
-
-	if room.Peer1ID == peerID {
-		room.Peer1ID = ""
-		log.Println("Removed Peer1ID:", peerID)
-	} else if room.Peer2ID == peerID {
-		room.Peer2ID = ""
-		log.Println("Removed Peer2ID:", peerID)
-	} else {
-		log.Println("PeerID not found in room:", peerID)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "PeerID not found in room"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "PeerID removed successfully"})
-}
