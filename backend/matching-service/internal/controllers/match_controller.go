@@ -89,6 +89,14 @@ func findComplexityIntersection(a, b []models.QuestionComplexityEnum) []models.Q
 	return intersection
 }
 
+func convertEnumToStringSlice(enums []models.ProgrammingLanguageEnum) []string {
+	strSlice := make([]string, len(enums))
+	for i, e := range enums {
+		strSlice[i] = string(e) // Assuming ProgrammingLanguageEnum can be cast to string
+	}
+	return strSlice
+}
+
 // startMatchingProcess starts the matching logic with a timeout
 func startMatchingProcess(matchingInfo models.MatchingInfo) {
 	matchChan := make(chan *models.MatchingInfo)
@@ -146,7 +154,7 @@ func startMatchingProcess(matchingInfo models.MatchingInfo) {
 			}
 
 			if timer, ok := utils.Store[matchedUser.UserID]; ok {
-				timer.Stop() 
+				timer.Stop()
 				delete(utils.Store, matchedUser.UserID)
 			}
 
@@ -161,19 +169,25 @@ func startMatchingProcess(matchingInfo models.MatchingInfo) {
 			// dind the intersection of complexities and categories
 			complexityIntersection := findComplexityIntersection(matchingInfo.DifficultyLevel, matchedUser.DifficultyLevel)
 			categoriesIntersection := findIntersection(matchingInfo.Categories, matchedUser.Categories)
+			programmingLanguageIntersection := findIntersection(convertEnumToStringSlice(matchedUser.ProgrammingLanguages), convertEnumToStringSlice(matchingInfo.ProgrammingLanguages))
+
+			var selectedLanguage models.ProgrammingLanguageEnum
+			if len(programmingLanguageIntersection) > 0 {
+				selectedLanguage = models.ProgrammingLanguageEnum(programmingLanguageIntersection[0])
+			}
 
 			matchResult := models.MatchResult{
-				UserOneSocketID: matchingInfo.SocketID,
-				UserTwoSocketID: matchedUser.SocketID,
-				UserOne:         matchingInfo.UserID,   
-				UsernameOne:     matchingInfo.Username,
-				UserTwo:         matchedUser.UserID,   
-				UsernameTwo:     matchedUser.Username,
-				RoomID:          roomID,                
-				ProgrammingLanguages: matchedUser.ProgrammingLanguages[0],
-				Complexity:      complexityIntersection, 
-				Categories:      categoriesIntersection, 
-				Question:        models.Question{},      
+				UserOneSocketID:      matchingInfo.SocketID,
+				UserTwoSocketID:      matchedUser.SocketID,
+				UserOne:              matchingInfo.UserID,
+				UsernameOne:          matchingInfo.Username,
+				UserTwo:              matchedUser.UserID,
+				UsernameTwo:          matchedUser.Username,
+				RoomID:               roomID,
+				ProgrammingLanguages: selectedLanguage,
+				Complexity:           complexityIntersection,
+				Categories:           categoriesIntersection,
+				Question:             models.Question{},
 			}
 
 			// Publish the match result to RabbitMQ
