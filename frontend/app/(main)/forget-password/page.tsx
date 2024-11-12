@@ -11,23 +11,22 @@ import { useForgetPassword } from "@/hooks/api/auth";
 export default function Page() {
   const router = useRouter();
   const { mutate: forgetPassword, isPending } = useForgetPassword();
-  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = React.useState<string | null>(null);
 
   const handleForgetPassword = (email: string) => {
     forgetPassword(
-      { email }, // Corrected to send an object, as expected by the backend
+      { email },
       {
         onSuccess: () => {
-          // Optionally show a message to check their email, or redirect
-          console.log("Password reset email sent!");
-          router.push("/");
+          // Show the success message in place
+          setStatusMessage("Reset email sent!");
         },
         onError: (err) => {
           console.error("Forgot password failed:", err);
           if (err?.response?.status === 401) {
-            setErrorMessage("Please enter a valid registered email.");
+            setStatusMessage("Please enter a valid registered email.");
           } else {
-            setErrorMessage("An unexpected error occurred. Please try again.");
+            setStatusMessage("An unexpected error occurred. Please try again.");
           }
         },
       },
@@ -48,8 +47,8 @@ export default function Page() {
         {/* ForgetPasswordForm component, with the correct onSubmit handler */}
         <ForgetPasswordForm onSubmit={handleForgetPassword} />
 
-        {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
-        {isPending && (
+        {statusMessage && <p className="text-gray-500 mt-4">{statusMessage}</p>}
+        {isPending && !statusMessage && (
           <p className="text-gray-400 mt-4">Sending reset email...</p>
         )}
         <div className="mt-6 text-center">
@@ -61,3 +60,4 @@ export default function Page() {
     </div>
   );
 }
+
