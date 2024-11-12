@@ -2,8 +2,7 @@
 
 import React, { useCallback } from "react";
 import { Key as ReactKey } from "react";
-import Link from "next/link";
-import { Button } from "@nextui-org/button";
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableHeader,
@@ -51,19 +50,17 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
     index: idx + 1,
   }));
 
+  const router = useRouter();
+  const handleRowClick = (session: History) => () => {
+    router.push(`/history/session-details?id=${session.room_id}&index=${session.index}`);
+  };
+
   const renderCell = useCallback((session: History, columnKey: ReactKey) => {
     const question = session.question;
 
     switch (columnKey) {
       case "index": {
-        return (
-          <NavLink
-            hover={true}
-            href={`/history/session-details?id=${session.room_id}&index=${session.index}`}
-          >
-            {session.index}
-          </NavLink>
-        );
+        return <h2>{session.index}</h2>;
       }
       case "question": {
         const titleString = question?.title || "N/A";
@@ -85,7 +82,13 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
         return <h2>{session.programming_language || "N/A"}</h2>;
       }
       case "partner": {
-        return <h2>{session.userTwo == username ? session.userOne : session.userTwo|| "N/A"}</h2>;
+        return (
+          <h2>
+            {session.userTwo == username
+              ? session.userOne
+              : session.userTwo || "N/A"}
+          </h2>
+        );
       }
       case "createdAt": {
         const formattedDate = session.createdAt
@@ -132,17 +135,18 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
         >
           <TableHeader columns={columns}>
             {(column) => (
-              <TableColumn
-                key={column.uid}
-                align="start"
-              >
+              <TableColumn key={column.uid} align="start">
                 {column.name}
               </TableColumn>
             )}
           </TableHeader>
           <TableBody emptyContent={"No sessions to display"} items={sessions}>
             {(item) => (
-              <TableRow key={item.room_id}>
+              <TableRow
+                key={item.room_id}
+                className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={handleRowClick(item)}
+              >
                 {(columnKey) => (
                   <TableCell>{renderCell(item, columnKey)}</TableCell>
                 )}

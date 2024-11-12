@@ -3,6 +3,7 @@
 import React, { useCallback } from "react";
 import { Key as ReactKey } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@nextui-org/button";
 import {
   Table,
@@ -47,28 +48,27 @@ const QuestionTable: React.FC<QuestionTableProps> = ({
     ...question,
     index: idx + 1,
   }));
+
+  const router = useRouter();
+  const handleRowClick = (question: Question) => () => {
+    router.push(
+      `/questions/question-description?id=${question.questionId}&index=${question.index}`
+    );
+  };
+
   const renderCell = useCallback((question: Question, columnKey: ReactKey) => {
     const questionValue = question[columnKey as keyof Question];
 
     switch (columnKey) {
       case "index": {
-        return (
-          <NavLink
-            hover={true}
-            href={`/questions/question-description?id=${question.questionId}&index=${question.index}`}
-          >
-            {questionValue}
-          </NavLink>
-        );
+        return <h2>{questionValue}</h2>;
       }
       case "title": {
         const titleString: string = questionValue as string;
-
         return <h2 className="capitalize">{titleString}</h2>;
       }
       case "category": {
         const categories: string[] = questionValue as string[];
-
         return (
           <CategoryTags
             categories={categories}
@@ -82,9 +82,8 @@ const QuestionTable: React.FC<QuestionTableProps> = ({
       case "action": {
         return <ActionButtons question={question} />;
       }
-
       default: {
-        return <h2>{questionValue}</h2>;
+        return <span>{questionValue}</span>;
       }
     }
   }, []);
@@ -132,7 +131,11 @@ const QuestionTable: React.FC<QuestionTableProps> = ({
           </TableHeader>
           <TableBody emptyContent={"No questions to display"} items={questions}>
             {(item) => (
-              <TableRow key={item.questionId}>
+              <TableRow
+                key={item.questionId}
+                className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={handleRowClick(item)}
+              >
                 {(columnKey) => (
                   <TableCell>{renderCell(item, columnKey)}</TableCell>
                 )}
