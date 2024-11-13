@@ -117,7 +117,6 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
     }
 
     if (!formData.category || formData.category.length === 0) {
-      console.log(formData.category.length === 0);
       newErrors.category = true;
     }
 
