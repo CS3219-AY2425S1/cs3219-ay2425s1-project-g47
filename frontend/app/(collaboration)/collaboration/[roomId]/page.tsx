@@ -13,6 +13,8 @@ import {
 import { Button } from "@nextui-org/button";
 import { Avatar } from "@nextui-org/avatar";
 import { toast } from "react-toastify";
+import Cookies from "js-cookie";
+import { Spinner } from "@nextui-org/spinner";
 
 import { Question } from "@/types/questions";
 import QuestionDescription from "@/components/questions/QuestionDescription";
@@ -27,10 +29,10 @@ import {
   useSaveCode,
 } from "@/hooks/api/collaboration";
 import { SaveCodeVariables } from "@/utils/collaboration";
-import Cookies from "js-cookie";
 
 export default function Page() {
   const [output, setOutput] = useState("Your output will appear here...");
+  const [isLoading, setIsLoading] = useState(false);
   const code = useRef("");
   const language = useRef("");
   const router = useRouter();
@@ -139,24 +141,26 @@ export default function Page() {
   useEffect(() => {
     const handleBeforeUnload = () => {
       const peerID = Cookies.get("peerID");
+
       if (peerID) {
         fetch(`http://localhost:8085/leave/${roomId}?peerID=${peerID}`, {
           method: "POST",
         }).catch((err) => console.error("Error leaving room:", err));
       }
     };
-  
+
     window.addEventListener("beforeunload", handleBeforeUnload);
+
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [roomId]);
-  
+
   useEffect(() => {
     if (socket && roomId && user) {
       // Check for existing peerID in localStorage for reconnection
       const storedPeerID = localStorage.getItem("peerID");
 
       if (storedPeerID) {
-        // Attempt reconnection 
+        // Attempt reconnection
         socket.emit("join-room", roomId, user.username, storedPeerID);
       } else {
         // Join as a new connection
@@ -214,6 +218,11 @@ export default function Page() {
     return otherUser ? "success" : "default";
   };
 
+  const handleCodeOutput = (output: string) => {
+    setOutput(output);
+    setIsLoading(false);
+  };
+
   return (
     <>
       {isAuthorisationPending ? (
@@ -231,9 +240,10 @@ export default function Page() {
             {/* Editor Section */}
             <div className="flex-[2_2_0%] p-2 border-r border-gray-700">
               <CodeEditor
+                handleCodeExecuteStart={() => setIsLoading(true)}
+                handleCodeOutput={handleCodeOutput}
                 language={language.current || "js"}
                 roomId={roomId as string}
-                setOutput={setOutput}
                 userEmail={user?.email || "unknown user"}
                 userId={user?.id || "unknown user"}
                 userName={user?.username || "unknown user"}
@@ -265,7 +275,7 @@ export default function Page() {
                 <h3 className="font-semibold mb-2">Output:</h3>
                 <div className="flex-1">
                   <pre className="break-words text-wrap overflow-y-scroll">
-                    {output}
+                    {isLoading ? <Spinner /> : output}
                   </pre>
                 </div>
               </div>
