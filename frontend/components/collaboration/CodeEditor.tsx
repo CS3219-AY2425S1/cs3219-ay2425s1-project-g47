@@ -11,7 +11,8 @@ import axios from "@/utils/axios";
 var randomColor = require("randomcolor"); // import the script
 
 interface CodeEditorProps {
-  setOutput: React.Dispatch<React.SetStateAction<string>>;
+  handleCodeOutput: (output: string) => void;
+  handleCodeExecuteStart: () => void;
   roomId: string;
   language: string;
   onCodeChange: (code: string) => void;
@@ -21,12 +22,15 @@ interface CodeEditorProps {
 }
 
 const LANGUAGE_MAP: Record<string, number> = {
-  javascript: 63,
-  python: 71,
-  java: 62,
-  cpp: 54,
+  cpp: 52,
   csharp: 51,
-  // Add more mappings as needed
+  python: 71,
+  javascript: 63,
+  java: 62,
+  ruby: 72,
+  go: 95,
+  php: 98,
+  typescript: 94,
 };
 
 const CODE_EDITOR_LANGUAGE_MAP: { [language: string]: string } = {
@@ -42,7 +46,8 @@ const CODE_EDITOR_LANGUAGE_MAP: { [language: string]: string } = {
 };
 
 export default function CodeEditor({
-  setOutput,
+  handleCodeExecuteStart,
+  handleCodeOutput,
   roomId,
   language,
   userName,
@@ -70,7 +75,6 @@ export default function CodeEditor({
         language_id: languageId,
       });
       const token = response.data.token;
-
       const intervalId = setInterval(async () => {
         try {
           const { data } = await axios.get(
@@ -80,24 +84,29 @@ export default function CodeEditor({
             },
           );
 
-          if (data.status.id === 3) {
+          if (data.status.id >= 3) {
             clearInterval(intervalId);
-            setOutput(data.stdout || data.stderr || "No output");
-          } else if (data.status.id > 3) {
-            clearInterval(intervalId);
-            setOutput(data.stderr || "An error occurred");
+            if (data.status.id === 3) {
+              handleCodeOutput(data.stdout || data.stderr || "No Output");
+            } else if (data.status.id > 3) {
+              handleCodeOutput(
+                data.stderr || "An Error Occured in Code Execution",
+              );
+            }
           }
         } catch (error) {
           clearInterval(intervalId);
           console.error("Error fetching code execution result:", error);
-          setOutput(
-            "Something went wrong while fetching the code execution result.",
+          handleCodeOutput(
+            "Something went wrong while sending code execution request.",
           );
         }
       }, 1000);
+
+      handleCodeExecuteStart();
     } catch (error) {
       console.error("Error executing code:", error);
-      setOutput("Something went wrong during code execution.");
+      handleCodeOutput("Something went wrong during code execution.");
     }
   };
 
