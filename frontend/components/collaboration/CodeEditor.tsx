@@ -45,6 +45,18 @@ const CODE_EDITOR_LANGUAGE_MAP: { [language: string]: string } = {
   typescript: "typescript",
 };
 
+const CODE_EDITOR_LANGUAGE_DISPLAY_MAP: { [language: string]: string } = {
+  "c++": "C++",
+  "c#": "C#",
+  python: "Python",
+  js: "JavaScript",
+  java: "Java",
+  ruby: "Ruby",
+  go: "Go",
+  php: "PHP",
+  typescript: "TypeScript",
+};
+
 export default function CodeEditor({
   handleCodeExecuteStart,
   handleCodeOutput,
@@ -114,7 +126,7 @@ export default function CodeEditor({
     <div className="flex flex-col space-y-3">
       <div className="flex justify-between px-[1.5] pt-1">
         <p className="bg-slate-200 text-black text-center rounded-md px-1 py-[2]">
-          {language}
+          {CODE_EDITOR_LANGUAGE_DISPLAY_MAP[language]}
         </p>
         <button
           className="px-1 py-2 rounded-md"
