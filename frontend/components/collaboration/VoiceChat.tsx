@@ -147,11 +147,6 @@ export default function VoiceChat({
       <CardBody>
         <h2>PeerJS Voice Chat</h2>
         <p>Room: {roomID}</p>
-        {connectionPeerID && <p>Your Peer ID: {peerID}</p>}
-        <p className={!connectionPeerID ? "animate-pulse" : ""}>
-          {!connectionPeerID ? "Connecting: " : "Connected to: "}
-          {connectionPeerID || "Waiting for peer..."}
-        </p>
       </CardBody>
       <CardFooter>
         <div>
