@@ -32,6 +32,11 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
       ...formData,
       title: e.target.value,
     });
+
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      title: false,
+    }));
   };
 
   const handleComplexityOnChange = (
@@ -41,13 +46,23 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
       ...formData,
       complexity: e.target.value,
     });
+
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      complexity: false,
+    }));
   };
 
   const handleCategoryOnChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setFormData({
       ...formData,
-      category: e.target.value.split(","),
+      category: e.target.value.split(",").filter(Boolean),
     });
+
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      category: false,
+    }));
   };
 
   const handleDescriptionOnChange = (
@@ -57,6 +72,11 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
       ...formData,
       description: e.target.value,
     });
+
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      description: false,
+    }));
   };
 
   const handleExamplesOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,6 +84,11 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
       ...formData,
       examples: e.target.value,
     });
+
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      examples: false,
+    }));
   };
 
   const handleConstraintsOnChange = (
@@ -73,6 +98,11 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
       ...formData,
       constraints: e.target.value,
     });
+
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      constraints: false,
+    }));
   };
 
   const isValid = () => {
@@ -86,7 +116,8 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
       newErrors.complexity = true;
     }
 
-    if (formData.category.length === 0) {
+    if (!formData.category || formData.category.length === 0) {
+      console.log(formData.category.length === 0);
       newErrors.category = true;
     }
 
@@ -99,7 +130,9 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
     if (!isValid()) {
       return;
     }
