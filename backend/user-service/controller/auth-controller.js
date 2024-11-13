@@ -34,7 +34,6 @@ export async function handleLogin(req, res) {
       // Set access token as an HTTP-only cookie
       res.cookie("accessToken", accessToken, {
         httpOnly: true,  // Ensure it's not accessible via JavaScript (XSS protection)
-        secure: true,    // Ensure it's only transmitted over HTTPS
         sameSite: "none",  // Mitigate CSRF attacks
         maxAge: 12 * 60 * 60 * 1000,  // 12 hour
       });
