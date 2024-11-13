@@ -1,0 +1,8 @@
+{
+    "secure": false,
+    "port": 9000,
+    "path": "/",
+    "key": "peerjs",
+    "allow_discovery": true
+  }
+  

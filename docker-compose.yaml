@@ -1,0 +1,127 @@
+version: '3.8'
+services:
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./frontend/.env # Load frontend environment variables
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://nginx
+    depends_on:
+      - user-service
+      - question-service
+      - matching-service
+      - collaboration-service
+      - voice-service
+    networks:
+      - app-network
+
+  user-service:
+    build:
+      context: ./backend/user-service
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - app-network
+
+  question-service:
+    build:
+      context: ./backend/question-service
+    ports:
+      - "5050:5050"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - app-network
+  
+  matching-service:
+    build:
+      context: ./backend/matching-service
+    ports:
+      - "3002:3002" 
+    environment:
+      - NODE_ENV=production
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_URL=amqp://ihate:cs3219@rabbitmq:5672/
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  collaboration-service:
+    build:
+      context: ./backend/collaboration-service
+    ports:
+      - "8080:8080" 
+      - "2501:2501"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  voice-service:
+    build: ./backend/voice-service
+    ports:
+      - "8085:8085"              # Exposes the backend on localhost:8085
+    environment:
+      - PORT=8085
+    networks:
+      - app-network
+
+  peer-server:
+    build: ./backend/peer-server
+    ports:
+      - "9000:9000"              # Exposes PeerJS server on localhost:9000
+    networks:
+      - app-network
+    environment:
+      - PEER_PORT=9000
+      - PEER_PATH=/
+      - PEER_KEY=peerjs
+      - PEER_CONFIG_FILE=/config.json
+    volumes:
+      - ./backend/peer-server/config.json:/config.json
+  
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"   # RabbitMQ port for messaging
+      - "15672:15672" # RabbitMQ management UI
+    environment:
+      - RABBITMQ_DEFAULT_USER=ihate
+      - RABBITMQ_DEFAULT_PASS=cs3219
+      - RABBITMQ_ERLANG_COOKIE=1234
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+  
+  nginx:
+    build:
+      context: ./backend/api-gateway  
+    ports:
+      - "80:80"  
+    depends_on:
+      - user-service
+      - question-service
+      - matching-service
+      - collaboration-service
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
